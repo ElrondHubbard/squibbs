@@ -1,0 +1,83 @@
+## Factor or Continuous Variables
+
+---
+output: html_document
+---
+
+Factor Variables = Categorial Variables
+Gender = M/F, state = 1-50 + DC, etc
+This is how to deal w factor variables
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Open the reddit data used in EG
+
+```{r}
+setwd("C:/R/udacity_course")
+reddit <-read.csv('reddit.csv')
+```
+
+Look at data to see what's there
+str yeah k but output is fugly
+Can get summary of all w...summary
+
+```{r}
+summary(reddit)
+```
+
+Look at gender - is 0/1, summary is awful for showing this
+Care about 1 - gender 
+Table it. Oh look much better. 
+
+```{r}
+table(reddit$gender)
+```
+
+Now look at Ordered Factors - ie ranked
+age.range is a good one for this
+
+```{r}
+levels(reddit$age.range)
+```
+
+Let's see what it looks like visually.
+Load ggplot2 if necessary
+Look at output, notice it's not in order
+b/c numbers are set first then letters
+
+WHICH IS WHY WE NEED AN ORDERED FACTOR
+
+```{r}
+qplot(data=reddit,x=age.range)
+```
+
+```{r}
+age.range.order <- ordered(reddit$age.range, levels = c("Under 18","18-24","25-34","45-54","65 or Above","NA"))
+```
+
+Now notice how this new plot looks better
+
+```{r}
+qplot(data=reddit, x=age.range.order)
+```
+
+Same w income just do it more programmy wo creating sep value
+Looks fugly, get levels to list properly
+
+```{r}
+qplot(data=reddit, x=income.range)
+levels(reddit$income.range)
+```
+
+This tells R to recode the income.range var as a Factor, then to Order it, 
+rather than creating some separate value/variable. Looks cleaner to me.
+
+```{r}
+reddit$income.range <- factor(reddit$income.range, levels = c("Under $20,000", "$20,000 - $29,999", "$30,000 - $39,999", "$40,000 - $49,999", "$50,000 - $69,999", "$70,000 - $99,999", "$100,000 - $149,999", "$150,000 or more","NA"), ordered=T)
+qplot(data=reddit, x=income.range)
+```
+
+
+

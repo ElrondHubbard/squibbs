@@ -1,0 +1,68 @@
+RMD Markdown file is like a R Script but w more functionality
+
+   It's all notes unless you specifiy Rcode, this is done in 'chunks'
+    can point and click 'insert chunk' or 
+    use backticks and r curly brackets to begin chunk, backticks to end.
+    Use ECHO = FALSE command inside curly brackets to make code not 
+    display in final knit result.
+    
+   Also can use 'Knit' function (must load library first), this will
+    make output as a html file, word doc, pdf. SO, can write out narrative, 
+    have command to produce a table, table will show up, write out more             explanation of table, code to produce graph, graph shows up, explain
+    graph. Use echo=FALSE in curly brackets to suppress code in Knit result.
+    I mean come the fuck on here.
+
+   See directly below, 3 single dashes contain default of output,
+    >= 3 equal signs create header, header will come out large on top of 
+    whatever output format you specify. Two hashtags makes same header.
+
+   Italics is 1 asterisk, bold is 2 asterisks, put on either side of 
+    whatever you want bolded or in italics.
+    
+   Go to Help dropdown for RMD quick reference guide, has lots of stuff   
+    
+---
+output:
+  html_document: default
+---
+Speed and Stopping Distances of Cars
+========================================================
+
+This is an R Markdown document or RMD. Markdown is a simple formatting syntax for authoring web pages (click the **Help** toolbar button for more details on using R Markdown).
+
+Load the mtcars dataframe, look at its structure, show first ten rows.
+
+
+```{r}
+data(mtcars)
+str(mtcars)
+head(mtcars, 10)
+```
+
+Make a graph.
+Subset mtcars to only include hp and mpg then plot them
+Create sep dataset, display first ten rows
+
+```{r}
+cars_hp_mpg <- subset(mtcars, select=c(mpg, hp))
+
+head(cars_hp_mpg,10)
+
+```
+
+Now scatter plot it, note code not displayed thank you 'echo'
+
+```{r fig.width=7, fig.height=6, echo=FALSE}
+plot(cars_hp_mpg)
+
+```
+
+Now use full mtcars dataset, display 
+which cars in dataset has mpg >=30 OR hp <60
+
+```{r}
+subset(mtcars, mpg>=30 | hp<60)
+
+```
+
+When you click the **Knit HTML** button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document.

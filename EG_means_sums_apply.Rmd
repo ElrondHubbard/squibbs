@@ -1,0 +1,174 @@
+---
+title: 'Some cheats for Xapply and stuff and things'
+author: "Yerik Kaslow"
+date: "April 18, 2017"
+output:
+  word_document: default
+  html_document: default
+---
+
+**Cheats for simple data manipulation, extraction, and Xapply**
+
+R has lots of versions of the apply command, which does what it sorta sounds like:
+takes a function or operation, and applies it over a series of data ie a shitload.
+
+Because R is a computing language, all its documentation reads like 1970s stereo instructions. Not all of us are programmers who think spatially and eschew real world examples for purely theoretical classroom types, but thanks for the assumption.
+
+From: 
+http://www.dataanalytics.org.uk/Data%20Analysis/TipsAndTricks/TTR-20131028.htm
+
+Create a small dataset to show how notation works and how to use it to subset parts of a dataset to get simple calculations. 
+
+** EG 1 - 1 dimensional object**
+
+```{r}
+eg_data <- c(3,5,7,5,3,2,6,8,5,6,9)
+
+```
+
+A single R 'object', think of this as a single column with 11 rows or observations. How to pull out specific datapoints within the object.
+
+Return 7, the 3rd datapoint
+```{r}
+eg_data[3]
+```
+
+Return the first datapoint
+```{r}
+eg_data[1]
+```
+
+Return the first four datapoints
+```{r}
+eg_data[1:4]
+```
+
+Return all *but* the first datapoint
+```{r}
+eg_data[-1]
+```
+
+Return all datapoints > 3
+```{r}
+eg_data[eg_data > 3]
+```
+
+Return all datapoints < 5 OR > 7
+```{r}
+eg_data[eg_data < 5 | eg_data > 7]
+```
+
+**EG 2 - 2 dimensional object - data.frame (set) or matrix**
+
+```{r}
+eg_matrix = matrix(1:30, ncol=5, dimnames=list(1:6, LETTERS[1:5]))
+```
+
+What is much more common is a tablur form of data, IE rows and columns. In this case, it's a 5 column matrix w values 1 to 30, do some simple math to see it'll be a 5x6 matrix aka 5 columns 6 rows. Dimnames refer to row and column values, in this case, it'll look just like Excel - rows = numbers, columns = capital letters (LETTERS in caps = capital).  
+
+**Much more common** to see this type of data, some basic manipulations:
+
+Return datapoint from row2, col3
+```{r}
+eg_matrix[2,3]
+```
+
+Return datapoints from all rows, only col2
+```{r}
+eg_matrix[,2]
+```
+
+Return datapoints only row3, all cols
+```{r}
+eg_matrix[3,]
+```
+
+Return datapoints from all rows and all cols, except 1st row
+```{r}
+eg_matrix[-1,]
+```
+
+**Actually do something w the data**
+
+SYNTAX:
+**apply(eg_matrix[x1,y1],x2,y2,mean)**
+
+**apply** - specific loop function name
+**eg_matrix** - dataset or object to run operation on
+**[x1,y1]** - x1=rows to include in operation , y1=col to include in operation
+**x2,y2** - x2=1 if perform operation on rows, y2=2 if perform operation on col, to do both                rows and columns would be c(1,2)
+**mean** - operation/analysis being run (mean, median, min, max, range, sd, etc)
+
+Get mean of all columns
+Get mean of all rows
+```{r}
+apply(eg_matrix[,1:5],2,mean)
+apply(eg_matrix[1:6,],1,mean)
+```
+
+**EG 3 - An actual dataset***
+
+Use the Iris dataset from base R, small dataset w details about different types of Iris plants. Open it up, look at how cute it is. So cute.
+
+```{r}
+library(datasets)
+data(iris)
+str(iris)
+```
+
+**EG 1 - Subset based on a column aka *some* of the data**
+
+We care about the *Virginica* species of Iris. What is the mean value for Sepal Length, for the iris species virginica? 
+
+First, subset the Iris dataset, only include virginica species.
+Be sure to include Hungarian words whenever possible.
+
+```{r}
+virginica <- subset(iris, Species == 'virginica')
+```
+
+Get the mean for Sepal Length. 
+You know what, fuck it, let's just get the mean for *all* the things, for the virginica species.
+
+See *SYNTAX* breakdown above
+
+apply function below says:
+*Return the col means, use data from all rows, and col1:4, for the Iris df*
+*Return the col means, use data from all rows, and col1:4, for the Virginica df*
+```{r}
+apply(iris[,1:4],2,mean)
+apply(virginica[,1:4],2,mean)
+```
+
+**ROW EG**
+Row means not quite as common in research (tabular data usually r=obs/case, c=variables) but do occur in business. EG: rows = people, col = dates ('week of'), cells = sales amt. 
+Calculate multiple measures of sales volume in month of April.
+
+```{r}
+eg_matrix2 = matrix(1:30, ncol=5, dimnames=list(c("tom","dick","harry","jim","dan","tony"), c("Apr1", "Apr8", "Apr15", "Apr22", "Apr29")))
+```
+
+Will return:
+Average $ sold by each person in April
+Total $ sold by each person in April
+Average $ sold each week in April
+Total $ sold each week in April
+```{r}
+apply(eg_matrix2[,1:5],1,mean)
+apply(eg_matrix2[,1:5],1,sum)
+apply(eg_matrix2[1:6,],2,mean)
+apply(eg_matrix2[1:6,],2,sum)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
