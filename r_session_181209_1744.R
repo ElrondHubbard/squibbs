@@ -52,5 +52,23 @@ stack_bar_trips_type_period4 <- (
 )
 stack_bar_trips_type_period4
 
+# VJ 0
+# Larger #, further down from top...oops
+stack_bar_trips_type_period5 <- (
+  ggplot(data = stack_bar_trips_type, aes(x=period, y=sum_type_period, fill=trip_type)) +
+    geom_bar(stat="identity", color = "black", position='stack') +
+    scale_fill_manual(values=c("red", "green")) +
+    geom_text(aes(label=sum_type_period), vjust=0, size=3.5)    
+)
+stack_bar_trips_type_period5
 
+# VJ -0.5
+# Larger #, further down from top...oops
+stack_bar_trips_type_period6 <- (
+  ggplot(data = stack_bar_trips_type, aes(x=period, y=sum_type_period, fill=trip_type)) +
+    geom_bar(stat="identity", color = "black", position='stack') +
+    scale_fill_manual(values=c("red", "green")) +
+    geom_text(aes(label=sum_type_period), vjust= -0.5, size=3.5)    
+)
+stack_bar_trips_type_period6
 
