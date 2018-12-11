@@ -149,7 +149,7 @@ rm(stack_bar_data, stack_bar_trips_type, stack_bar_drivers, stack_bar_trips, sta
 #######################
 # Creates line graphs #
 #######################
-line_trend_data <- subset(taxi_data2, select=c(47,48,59,62,35,39)) # ID, shiftid, trip, short_trip, period   
+line_trend_data <- subset(taxi_data2, select=c(47,48,59,62,35,39)) # ID, shiftid, trip, short_trip, period, date   
 line_trend_data$trip_type <- ifelse(line_trend_data$short_trip_yn==1,"Short","Long")  
 line_trend_data$period <- as.factor(line_trend_data$period)
 line_trend_data$trip_type <- as.factor(line_trend_data$trip_type)
