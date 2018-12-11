@@ -1,7 +1,7 @@
 
 
 ## Same as better but wo as much filler, removed the big clunky dplyr grp etc
-
+# See line 175
 
 ###############################################################
 # Creates series of bar graphs for 18-0097 Gallaway taxi cabs #
@@ -168,6 +168,19 @@ test_line_p4 <- (ggplot(data = line_trips_by_month_p2, aes(x=month, y=sum_trips_
                  geom_point() )
 test_line_p3
 test_line_p4
+
+###################
+# ADDED JUST BEFORE LEAVE 181211
+###################
+# See geom_text - can add labels to graph that will show values at each point
+# Add them, add more color, make it prettier
+test_line_p3 <- (ggplot(data = line_trips_by_month_p1, aes(x=month, y=sum_trips_month, group=1)) +
+                   geom_line() + 
+                   geom_point() +
+geom_text(aes(label=sum_trips_month), position = position_stack(vjust = 0.9), fontface="bold"))
+  test_line_p3
+
+
 
 # Check graph 5, looks FUGLY. Level of aggregation needs to be month, not date
 line_trips_by_date_type_p1 <- subset(line_trips_by_date, (line_trips_by_date$dupes_date_type==FALSE & line_trips_by_date$period==1))
