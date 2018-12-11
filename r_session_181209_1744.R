@@ -1,12 +1,13 @@
 library(dplyr)
 library(ggplot2)
 eg_data <- data.frame(
-# ID
-id=c(as.integer(1:1000)) ,
-# Random short trip YN 85/15 split
-short_trip_yn = c(sample( c(0,1), 1000, replace=TRUE, prob=c(0.85, 0.15))),
-# Random period var, 45/55 split
-period = c(sample( c(1,2), 1000, replace=TRUE, prob=c(0.45, 0.55))))
+  # ID
+  id= c(sample( c(1:250), 1000, replace = TRUE)) ,
+  # Random short trip YN 85/15 split
+  short_trip_yn = c(sample( c(0,1), 1000, replace=TRUE, prob=c(0.85, 0.15))),
+  # Random period var, 45/55 split
+  period = c(sample( c(1,2), 1000, replace=TRUE, prob=c(0.45, 0.55)))
+  )
 # Trip = 1
 eg_data$trip <- 1
 # Create dates, rbind them by month to one column, cbind column to dataframe
