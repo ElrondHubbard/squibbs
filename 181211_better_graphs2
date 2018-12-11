@@ -1,0 +1,220 @@
+
+
+## Same as better but wo as much filler, removed the big clunky dplyr grp etc
+
+
+###############################################################
+# Creates series of bar graphs for 18-0097 Gallaway taxi cabs #
+###############################################################
+
+
+stack_bar_data <- subset(taxi_data2, select=c(47,48,59,62,35)) # ID, shiftid, trip, short_trip, period   
+stack_bar_data$trip_type <- ifelse(stack_bar_data$short_trip_yn==1,"Short","Long")  
+stack_bar_data$period <- as.factor(stack_bar_data$period)
+stack_bar_data$trip_type <- as.factor(stack_bar_data$trip_type)
+stack_bar_data <- ungroup(stack_bar_data)
+
+# Creates stacked bar for trips data by trip type - Long vs Short, p1, p2, p1+p2
+stack_bar_trips_type <- stack_bar_data
+stack_bar_trips_type <- stack_bar_trips_type %>% group_by(trip_type, period) %>% mutate(sum_type_period = sum(trip))  
+stack_bar_trips_type$dupes <- duplicated(stack_bar_trips_type[,5:6])
+stack_bar_trips_type <- subset(stack_bar_trips_type, stack_bar_trips_type$dupes==FALSE, select=c(5:7))
+stack_bar_trips_type <- ungroup(stack_bar_trips_type)
+stack_bar_trips_type <- rbind(stack_bar_trips_type, (data.frame(period="1 + 2", trip_type="Long", sum_type_period=sum(stack_bar_trips_type[which(stack_bar_trips_type[,2]=="Long"),3]))))
+stack_bar_trips_type <- rbind(stack_bar_trips_type, (data.frame(period="1 + 2", trip_type="Short", sum_type_period=sum(stack_bar_trips_type[which(stack_bar_trips_type[,2]=="Short"),3]))))
+stack_bar_trips_type$period <- factor(stack_bar_trips_type$period, levels = c("1", "2", "1 + 2"))
+stack_bar_trips_type_period10 <- (
+  ggplot(data = stack_bar_trips_type, aes(x=period, y=sum_type_period, fill=trip_type)) +
+    geom_bar(stat="identity", color = "black", position='stack') +
+    scale_fill_manual(values=c("green", "red")) +
+    geom_text(aes(label=sum_type_period), position = position_stack(vjust = 0.9), fontface="bold") +
+    ggtitle("Total Trips by Period and Type") + xlab("Period") + ylab("Trips") +
+        theme( plot.title = element_text(color = "black", size = 14, face = "bold") ,
+           axis.title.x =  element_text(color="black", size = 12, face = "bold") ,
+           axis.title.y =  element_text(color="black", size = 12, face = "bold")) +
+    labs(fill = "Trip Type") )
+stack_bar_trips_type_period10
+
+# Creates stacked bar for trip totals in each period, p1, p2, and p1+p2
+stack_bar_trips <- subset(stack_bar_data, select=c(5,3))
+stack_bar_trips$dupes <- duplicated(stack_bar_trips[,1])
+stack_bar_trips <- stack_bar_trips %>% group_by(period) %>% mutate(sum_period = sum(trip))  
+stack_bar_trips <- subset(stack_bar_trips, stack_bar_trips$dupes==FALSE)
+stack_bar_trips <- ungroup(stack_bar_trips)
+stack_bar_trips <- subset(stack_bar_trips, select=c(1,4))
+# https://stackoverflow.com/questions/53660772/create-stacked-bar-chart-of-within-group-totals
+stack_bar_trips <- stack_bar_trips %>% mutate(grp = factor(period, levels = 1:2)) %>%
+  group_by(period) %>% complete(grp) %>% replace_na(list(sum_period = 0)) %>%
+  ungroup() %>% spread(period, sum_period) %>% mutate(`1+2` = `1` + `2`) %>%
+  gather(period, sum_period, -grp) %>% mutate(period = factor(period, levels = c("1", "2", "1+2")))
+stack_bar_trips <- subset(stack_bar_trips, (stack_bar_trips$sum_period > 0 & (stack_bar_trips$period != "1+2")))
+stack_bar_trips <- rbind(stack_bar_trips, (data.frame(grp = "3", period="1 + 2", sum_period=sum(stack_bar_trips$sum_period))))
+stack_bar_trips_graph2 <-  (
+  (ggplot(data = stack_bar_trips, aes(x=period, y=sum_period, fill = grp)) +
+     geom_bar(stat = "identity", color = "black")) +
+    scale_fill_manual(values = c("red", "green", "gold")) +
+    geom_text(aes(label = sum_period), position = position_stack(vjust = 0.9), fontface = "bold") +
+    ggtitle("Total Trips by Period") + xlab("Period") + ylab("Trips") +
+    theme(plot.title = element_text(color = "black", size = 14, face = "bold"),
+          axis.title.x = element_text(color = "black", size = 12, face = "bold"), 
+          axis.title.y = element_text(color = "black", size = 12, face = "bold")) +
+    labs(fill = "Period") )
+stack_bar_trips_graph2
+
+# Creates stacked bar for shift totals in each period, p1, p2, and p1+p2
+stack_bar_shifts <- subset(stack_bar_data, select=c(2,3,5))
+stack_bar_shifts$dupes <- duplicated(stack_bar_shifts[,1])
+stack_bar_shifts <- subset(stack_bar_shifts, stack_bar_shifts$dupes==FALSE)
+stack_bar_shifts <- stack_bar_shifts %>% group_by(period) %>% mutate(sum_period = sum(trip))  
+stack_bar_shifts <- ungroup(stack_bar_shifts)
+stack_bar_shifts$dupes <- duplicated(stack_bar_shifts[,5])
+stack_bar_shifts <- subset(stack_bar_shifts, stack_bar_shifts$dupes==FALSE, select=c(3,5))
+stack_bar_shifts$grp <- ifelse(stack_bar_shifts$period==1, 1, 2)
+stack_bar_shifts <- rbind(stack_bar_shifts, (data.frame(period="1 + 2", sum_period=sum(stack_bar_shifts$sum_period), grp = "3")))
+stack_bar_shifts_graph2 <-  (
+  (ggplot(data = stack_bar_shifts, aes(x=period, y=sum_period, fill = grp)) +
+     geom_bar(stat = "identity", color = "black")) +
+    scale_fill_manual(values = c("red", "green", "gold")) +
+    geom_text(aes(label = sum_period), position = position_stack(vjust = 0.9), fontface = "bold") +
+    ggtitle("Total Shifts by Period") + xlab("Period") + ylab("Trips") +
+    theme(plot.title = element_text(color = "black", size = 14, face = "bold"),
+          axis.title.x = element_text(color = "black", size = 12, face = "bold"), 
+          axis.title.y = element_text(color = "black", size = 12, face = "bold")) +
+    labs(fill = "Period") )
+stack_bar_shifts_graph2
+
+# Creates stacked bar for drivers in each period, p1, p2, and p1+p2
+stack_bar_drivers <- subset(stack_bar_data, select=c(1,5,3))
+stack_bar_drivers$dupes <- duplicated(stack_bar_drivers[,1:2])
+stack_bar_drivers <- subset(stack_bar_drivers, stack_bar_drivers$dupes==FALSE)
+stack_bar_drivers <- stack_bar_drivers %>% group_by(period) %>% mutate(sum_period = sum(trip))  
+stack_bar_drivers <- ungroup(stack_bar_drivers)
+stack_bar_drivers$dupes <- duplicated(stack_bar_drivers[,5])
+stack_bar_drivers <- subset(stack_bar_drivers, stack_bar_drivers$dupes==FALSE, select=c(2,5))
+stack_bar_drivers$grp <- ifelse(stack_bar_drivers$period==1, 1, 2)
+stack_bar_drivers <- rbind(stack_bar_drivers, (data.frame(period="1 + 2", sum_period=sum(stack_bar_drivers$sum_period), grp = "3")))
+stack_bar_drivers_graph2 <-  (
+  (ggplot(data = stack_bar_drivers, aes(x=period, y=sum_period, fill = grp)) +
+     geom_bar(stat = "identity", color = "black")) +
+    scale_fill_manual(values = c("red", "green", "gold")) +
+    geom_text(aes(label = sum_period), position = position_stack(vjust = 0.9), fontface = "bold") +
+    ggtitle("Total Drivers by Period") + xlab("Period") + ylab("Trips") +
+    theme(plot.title = element_text(color = "black", size = 14, face = "bold"),
+          axis.title.x = element_text(color = "black", size = 12, face = "bold"), 
+          axis.title.y = element_text(color = "black", size = 12, face = "bold")) +
+    labs(fill = "Period") )
+stack_bar_drivers_graph2
+
+rm(stack_bar_data, stack_bar_trips_type, stack_bar_drivers, stack_bar_trips, stack_bar_shifts)
+
+#######################
+# End of stacked bars #
+#######################
+
+#######################
+# Creates line graphs #
+#######################
+line_trend_data <- subset(taxi_data2, select=c(47,48,59,62,35,39)) # ID, shiftid, trip, short_trip, period, date   
+line_trend_data$trip_type <- ifelse(line_trend_data$short_trip_yn==1,"Short","Long")  
+line_trend_data$period <- as.factor(line_trend_data$period)
+line_trend_data$trip_type <- as.factor(line_trend_data$trip_type)
+line_trend_data <- ungroup(line_trend_data)
+
+line_trips_by_date <- line_trend_data
+line_trips_by_date <- line_trips_by_date %>% group_by(trip_start) %>% mutate(sum_trips_date = sum(trip))
+line_trips_by_date <- line_trips_by_date %>% group_by(trip_type, trip_start) %>% mutate(sum_trips_date_type = sum(trip))
+line_trips_by_date$trip_start <- as.character(line_trips_by_date$trip_start)
+line_trips_by_date$trip_start <- as.Date(line_trips_by_date$trip_start,format = "%Y%m%d")
+line_trips_by_date$month <- substring(line_trips_by_date$trip_start,6,7)  
+line_trips_by_date$month <- gsub( "11", "Nov", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "12", "Dec", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "01", "Jan", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "02", "Feb", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "05", "May", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "06", "Jun", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "07", "Jul", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- gsub( "08", "Aug", line_trips_by_date$month, fixed = TRUE)
+line_trips_by_date$month <- factor(line_trips_by_date$month, levels = c("Nov", "Dec", "Jan", "Feb", "May", "Jun", "Jul", "Aug"))
+line_trips_by_date <- line_trips_by_date %>% group_by(month) %>% mutate(sum_trips_month = sum(trip))
+line_trips_by_date <- line_trips_by_date %>% group_by(month, trip_type) %>% mutate(sum_trips_month_type = sum(trip))
+line_trips_by_date <- ungroup(line_trips_by_date)
+line_trips_by_date <- subset(line_trips_by_date, select=c(1:7,10,8:9,11:12))
+line_trips_by_date <- line_trips_by_date[order(line_trips_by_date$trip_start, line_trips_by_date$trip_type),]
+line_trips_by_date$dupes_date <- duplicated(line_trips_by_date[,6]) # dupes by date only
+line_trips_by_date$dupes_date_type <- duplicated(line_trips_by_date[,6:7]) # dupes by date only
+line_trips_by_date$dupes_month <- duplicated(line_trips_by_date[,8]) # dupes by date only
+line_trips_by_date$dupes_month_type <- duplicated(line_trips_by_date[,7:8]) # dupes by date only
+
+# Subset to periods 1 and 2 by date, make two separate line graphs
+line_trips_by_date_p1 <- subset(line_trips_by_date, (line_trips_by_date$dupes_date==FALSE & line_trips_by_date$period==1))
+line_trips_by_date_p2 <- subset(line_trips_by_date, (line_trips_by_date$dupes_date==FALSE & line_trips_by_date$period==2))
+test_line_p1 <- (ggplot(data = line_trips_by_date_p1, aes(x=trip_start, y=sum_trips_date, group=1)) +
+                 geom_line() +
+                 geom_point() )
+test_line_p2 <- (ggplot(data = line_trips_by_date_p2, aes(x=trip_start, y=sum_trips_date, group=1)) +
+                 geom_line() +
+                 geom_point() )
+test_line_p1
+test_line_p2
+
+# Subset to periods 1 and 2 by month, make two separate line graphs
+line_trips_by_month_p1 <- subset(line_trips_by_date, (line_trips_by_date$dupes_month==FALSE & line_trips_by_date$period==1))
+line_trips_by_month_p2 <- subset(line_trips_by_date, (line_trips_by_date$dupes_month==FALSE & line_trips_by_date$period==2))
+test_line_p3 <- (ggplot(data = line_trips_by_month_p1, aes(x=month, y=sum_trips_month, group=1)) +
+                 geom_line() + 
+                 geom_point() )
+test_line_p4 <- (ggplot(data = line_trips_by_month_p2, aes(x=month, y=sum_trips_month, group=1)) +
+                 geom_line() + 
+                 geom_point() )
+test_line_p3
+test_line_p4
+
+# Check graph 5, looks FUGLY. Level of aggregation needs to be month, not date
+line_trips_by_date_type_p1 <- subset(line_trips_by_date, (line_trips_by_date$dupes_date_type==FALSE & line_trips_by_date$period==1))
+test_line_p5 <- (ggplot(data = line_trips_by_date_type_p1, aes(x=trip_start, y=sum_trips_date_type, group=trip_type)) +
+                   geom_line() +  geom_point() )
+test_line_p5
+
+line_trips_by_month_type_p1 <- subset(line_trips_by_date, (line_trips_by_date$dupes_month_type==FALSE & line_trips_by_date$period==1))
+test_line_p6 <- (ggplot(data = line_trips_by_month_type_p1, aes(x=month, y=sum_trips_month_type, group=trip_type)) +
+                   geom_line() +  geom_point() )
+test_line_p6
+
+eg_data <- data.frame(
+  time = c("1","2"), 
+  size1=c(200, 300))
+eg_data <- eg_data %>% 
+  mutate(grp = factor(time, levels = 1:2)) %>%
+  group_by(time) %>%
+  complete(grp) %>%
+  replace_na(list(size1 = 0)) %>%
+  ungroup() %>%
+  spread(time, size1) %>%
+  mutate(`1+2` = `1` + `2`) %>%
+  gather(time, size1, -grp) %>%
+  mutate(time = factor(time, levels = c("1", "2", "1+2")))
+  asdfa
+
+  eg_data_graph <-  (ggplot(data = eg_data, aes(time, size1, fill = grp)) +
+                       geom_col(position = "stack"))
+
+eg_data_graph
+eg_data <- rbind(eg_data, (data.frame(time="1 + 2", size1=sum(eg_data$size1))))
+eg_data$time <- factor(eg_data$time, levels = c("1 + 2", "1", "2"))
+eg_data_bar <- (ggplot() +
+                  geom_bar(data=eg_data, aes(y = size1, x = time, fill = time), stat="identity",position='stack'))
+eg_data_bar
+
+
+eg_data <- data.frame(
+  time = c("1", "1", "2","2"), 
+  type = c("Long", "Short","Long", "Short"), 
+  size1=c(200, 50, 500, 150),
+  size2=c(100, 40, 200, 100))
+eg_data <- eg_data %>% group_by(time) %>% mutate(sum_by_time = sum(size1, size2))
+eg_data <- eg_data %>% group_by(type) %>% mutate(sum_by_type = sum(size1))
+eg_data <- rbind(eg_data, (data.frame(time="1 + 2", type="Long", size1=sum(eg_data[which(eg_data[,2]=="Long"),3]), size2=sum(eg_data[which(eg_data[,2]=="Long"),4]))))
+eg_data <- rbind(eg_data, (data.frame(time="1 + 2", type="Short", size1=sum(eg_data[which(eg_data[,2]=="Short"),3]), size2=sum(eg_data[which(eg_data[,2]=="Short"),4]))))
+
+
+
